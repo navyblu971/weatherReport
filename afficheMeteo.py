@@ -3,6 +3,21 @@ from samplebase import SampleBase
 from rgbmatrix import graphics
 import time
 import subprocess
+import paho.mqtt.client as paho
+ 
+def on_connect(client, userdata, flags, rc):
+	print("CONNACK received with code %d." % (rc))
+ 
+
+
+
+def on_subscribe(client, userdata, mid, granted_qos):
+    print("Subscribed: "+str(mid)+" "+str(granted_qos))
+ 
+def on_message(client, userdata, msg):
+    print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
+
+
 
 class GraphicsTest(SampleBase):
     def __init__(self, *args, **kwargs):
@@ -10,6 +25,18 @@ class GraphicsTest(SampleBase):
 
     def run(self):
 
+	client = paho.Client()
+	client.on_connect = on_connect
+	client.username_pw_set("wqberakn", "8zk2BfULr4y2")
+	client.connect("m20.cloudmqtt.com", 19737)
+
+	client.on_subscribe = on_subscribe
+	client.on_message = on_message
+
+	client.subscribe("curial", qos=1)
+	
+	client.loop_forever()
+	
 	ret =subprocess.check_output(['ansiweather','-l' , 'Paris,FR']) 
 	temp = ret.split(" ")[6]
 	isRaining =0  
